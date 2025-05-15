@@ -56,15 +56,66 @@ if (carrinho.length === 0) {
 
 // Evento do botão "Finalizar Compra"
 document.getElementById('finalizar-compra').addEventListener('click', () => {
-  // Recupera o carrinho atualizado do localStorage
   const carrinhoAtual = JSON.parse(localStorage.getItem('carrinho')) || [];
-
-  // Verifica se há itens antes de seguir para o pagamento
   if (carrinhoAtual.length === 0) {
     alert("Seu carrinho está vazio. Adicione produtos antes de finalizar a compra.");
     return;
   }
-
-  // Redireciona para a página de pagamento
   window.location.href = '../pagamento/pagamento.html';
 });
+
+// Função para remover um item do carrinho
+function removerDoCarrinho(id) {
+  const index = carrinho.findIndex(filme => filme.id === id);
+  if (index === -1) return;
+
+  // Remove do array
+  carrinho.splice(index, 1);
+
+  // Atualiza o localStorage
+  localStorage.setItem('carrinho', JSON.stringify(carrinho));
+
+  // Remove o card do DOM
+  const cards = document.querySelectorAll('.card-carrinho');
+  const cardRemover = cards[index];
+  if (cardRemover) cardRemover.remove();
+
+  // Atualiza o total ou exibe a mensagem de carrinho vazio
+  atualizarTotalOuMensagem();
+}
+
+// Atualiza o valor total ou mostra a mensagem de carrinho vazio
+function atualizarTotalOuMensagem() {
+  if (carrinho.length === 0) {
+    conteudo.innerHTML = `
+      <div class="carrinho-vazio">
+        <p><strong>🛒 Seu carrinho está vazio no momento.</strong></p>
+        <p>Que tal dar uma olhada no nosso catálogo e escolher algo incrível?</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Atualiza o total exibido
+  const total = carrinho.reduce((soma, filme) => soma + filme.preco, 0);
+  const totalElemento = document.querySelector('#conteudo-carrinho p strong');
+  if (totalElemento) {
+    totalElemento.innerHTML = `Total: R$ ${total.toFixed(2)}`;
+  }
+}
+// Evento do botão "Limpar Carrinho"
+const botaoLimpar = document.getElementById('limpar-carrinho');
+if (botaoLimpar) {
+  botaoLimpar.addEventListener('click', () => {
+    const confirmacao = confirm("Tem certeza que deseja esvaziar o carrinho?");
+    if (confirmacao) {
+      localStorage.removeItem('carrinho');
+      location.reload();
+    }
+  });
+
+  // Oculta o botão se o carrinho estiver vazio
+  if (carrinho.length === 0) {
+    botaoLimpar.style.display = 'none';
+  }
+}
